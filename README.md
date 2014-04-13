@@ -5,7 +5,7 @@ TinyTX - DHT22 - Raspberry Pi serial reader
 
 This is a tiny script to receive data sent from TinyTX and save it to MysqlDB
 
-TinyTX is an Open Source wireless IoT sensor node built and shared by great
+TinyTX is an Open Source wireless IoT sensor node built and shared by great 
 Nathan Chantrell (http://nathan.chantrell.net/tinytx-wireless-sensor/)
 Special thanks goes to him also for the read_data function
 
