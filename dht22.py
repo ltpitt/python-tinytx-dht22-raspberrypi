@@ -2,13 +2,13 @@
 #
 # This is a tiny script to receive data sent from TinyTX and save it to MysqlDB
 #
-# TinyTX is an Open Source wireless IoT sensor node built and shared by great 
+# TinyTX is an Open Source wireless IoT sensor node built and shared by great
 # Nathan Chantrell (http://nathan.chantrell.net/tinytx-wireless-sensor/)
-# Special thanks goes to him also for the read_data function 
+# Special thanks goes to him also for the read_data function
 #
 # This script should be set to be executed in cron every 15 minutes.
 # To do so add in "crontab -e":
-# 
+#
 # 0,15,30,45 * * * * /usr/bin/python /your/script/path/dht22.py
 #
 # Davide Nastri, 04/2014
@@ -20,6 +20,8 @@ import MySQLdb
 import MySQLdb as Database
 from warnings import filterwarnings
 filterwarnings('ignore', category = Database.Warning)
+import smtplib
+from email.mime.text import MIMEText
 
 # Specify your serial port path (/dev/ttyAMA0 is default for Raspberry Pi)
 serialport = serial.Serial("/dev/ttyAMA0", 9600, timeout=0)
@@ -44,12 +46,16 @@ def read_data(rx):
     print "humidity:", humidity, "%"
     print "temperature:", temperature, "C"
     print "voltage:", voltage, "mV"
+    if int(voltage) < 3100:
+        low_battery_email_notification(voltage)
+    insert_data(humidity, temperature)
+
 
 # This function inserts received data into mysql database - Adjust parameters for your server
 def insert_data(humidity, temperature):
-    mydb = MySQLdb.connect(host='localhost',
-        user='root',
-        passwd='',
+    mydb = MySQLdb.connect(host='', # Enter your Mysql Server ip
+        user='', # Enter your mysql username
+        passwd='', # Enter your mysql password
         db='dht22')
     cursor = mydb.cursor()
     cursor.execute ('INSERT INTO dht22 (temperature, humidity)' \
@@ -57,7 +63,29 @@ def insert_data(humidity, temperature):
           temperature, humidity))
     mydb.commit()
     cursor.close()
-	exit()
+    exit()
+
+# This function sends notifications to email
+def low_battery_email_notification(battery_level):
+    message = "Battery in your TinyTX is running low.\r\nActual reading shows: "+str(battery_level)+" Millivolts"
+    subject = "TinyTX notification"
+    s = smtplib.SMTP('smtp.gmail.com')
+    s.set_debuglevel(1)
+    sender = '' # Fill with your information
+    password = '' # Same as above
+    recipients = [''] # Again
+    msg = MIMEText(message)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ", ".join(recipients)
+    s.ehlo()
+    s.starttls()
+    s.ehlo
+    s.login(sender, password)
+    s.sendmail(sender, recipients, msg.as_string())
+    s.quit()
+
+try_number = 0
 
 while True:
 
@@ -65,7 +93,10 @@ while True:
     if len(data) > 0:
         print "Got data: "+data
         read_data(data)
-    sleep(0.5)
-    print 'Waiting data....'
+    sleep(1)
+    try_number += 1
+    print 'Waiting data... '+str(try_number)
+    if try_number == 500:
+        exit()
 
 ser.close()
