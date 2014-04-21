@@ -49,10 +49,10 @@ def read_data(rx):
 def insert_data(humidity, temperature):
     mydb = MySQLdb.connect(host='localhost',
         user='root',
-        passwd='unreal',
+        passwd='',
         db='dht22')
     cursor = mydb.cursor()
-    cursor.execute ('INSERT INTO dht22 (temperatura, umidita)' \
+    cursor.execute ('INSERT INTO dht22 (temperature, humidity)' \
           'VALUES(%s, %s)', (
           temperature, humidity))
     mydb.commit()
