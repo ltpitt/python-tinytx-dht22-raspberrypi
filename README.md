@@ -1,6 +1,3 @@
-tinytx-dht22-raspberrypi
-========================
-
 ##TinyTX - DHT22 - Raspberry Pi serial reader
 
 This is a tiny script to receive data sent from TinyTX and save it to MysqlDB
